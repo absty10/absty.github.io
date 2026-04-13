@@ -182,21 +182,23 @@ a:hover { opacity: 0.8; }
 
 /* The Scan Lines Overlay */
 .hero-name::after {
-  /* This pulls the text from the HTML automatically to keep the split */
-  content: "YASH KITEY"; 
+  /* This creates the overlay mask */
+  content: ""; 
   position: absolute;
-  left: 0; top: 0;
-  width: 100%; height: 100%;
-  /* Dark lines that cut through the glow */
-  background: linear-gradient(
-    rgba(7, 11, 20, 0) 50%, 
-    rgba(7, 11, 20, 0.7) 50%
+  left: 0; 
+  top: 0;
+  width: 100%; 
+  height: 100%;
+  /* Using a repeating gradient for sharp, clear 'scanlines' */
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(7, 11, 20, 0.8) 0px,
+    rgba(7, 11, 20, 0.8) 2px,
+    transparent 2px,
+    transparent 4px
   );
-  background-size: 100% 4px;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   pointer-events: none;
-  z-index: 2;
+  z-index: 10; /* Ensure this is on top of everything */
 }
 .hero-title {
   font-family: var(--mono); font-size: 15px; letter-spacing: 2px;
