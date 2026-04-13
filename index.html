@@ -379,7 +379,31 @@ a:hover { opacity: 0.8; }
   content: '→'; position: absolute; left: 0; color: var(--text-dim);
   font-family: var(--mono); font-size: 12px;
 }
-
+/* COLLAPSIBLE CASES */
+.case-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none;
+}
+.case-toggle .arrow {
+  font-size: 18px; color: var(--text-dim);
+  transition: transform 0.3s ease;
+  flex-shrink: 0; margin-left: 12px;
+}
+.case.open .case-toggle .arrow { transform: rotate(180deg); }
+.case-bullets.collapsible {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease;
+  padding-top: 0;
+}
+.case.open .case-bullets.collapsible {
+  max-height: 600px;
+  padding-top: 14px;
+}
+.case-summary {
+  font-size: 13.5px; color: var(--text-muted); margin-top: 8px;
+  line-height: 1.6;
+}
+.case.open .case-summary { display: none; }
 /* ============================================================
    PROJECTS — MONITORED ASSETS
    ============================================================ */
@@ -686,25 +710,48 @@ a:hover { opacity: 0.8; }
       <h2>Mission Log</h2>
 
       <div class="timeline">
-        <div class="case current">
-          <div class="case-meta">CASE #002 &nbsp;|&nbsp; 2025 – PRESENT &nbsp;|&nbsp; PRIORITY: <span class="priority-crit">CRITICAL</span></div>
-          <div class="case-title">Research Assistant + MS Cybersecurity & Networks</div>
-          <div class="case-org">University of New Haven · West Haven, CT</div>
-          <ul class="case-bullets">
-            <li>Pursuing MS in Cybersecurity & Networks with focus on cloud security and network defense (graduating May 2027)</li>
-            <li>Research Assistant — supporting cybersecurity research projects within the university's security lab including Industrial Control Systems Security and AI-driven vulnerability analysis</li>
-            <li>Instructional Support Assistant - Designing and delivering a workforce-ready cybersecurity training program that takes participants from zero experience to a publishable GitHub portfolio in 6 weeks.</li>
-            <li>Deepening expertise in cloud security architecture and zero-trust design</li>
-            <li>Participated NCAE Cyber Games</li>
-            <li>Active CTF participant — TryHackMe, HackTheBox</li>
-          </ul>
-        </div>
+  <div class="case current open">
+    <div class="case-toggle" onclick="this.parentElement.classList.toggle('open')">
+      <div>
+        <div class="case-meta">CASE #003 &nbsp;|&nbsp; JAN 2026 – PRESENT &nbsp;|&nbsp; PRIORITY: <span class="priority-high">ACTIVE</span></div>
+        <div class="case-title">Instructional Assistant — Cybersecurity</div>
+        <div class="case-org">University of New Haven</div>
+        <div class="case-summary">Designing workforce-ready cybersecurity training programs from scratch.</div>
+      </div>
+      <span class="arrow">›</span>
+    </div>
+    <ul class="case-bullets collapsible">
+      <li>Designing and delivering a workforce-ready cybersecurity training program that takes participants from zero experience to a publishable GitHub portfolio in 6 weeks</li>
+    </ul>
+  </div>
 
-        <div class="case">
-          <div class="case-meta">CASE #001 &nbsp;|&nbsp; 2022 – 2025 &nbsp;|&nbsp; PRIORITY: <span class="priority-high">HIGH</span></div>
-          <div class="case-title">System Engineer — Security & DevOps</div>
-          <div class="case-org">TCS (Tata Consultancy Services) · India</div>
-          <ul class="case-bullets">
+  <div class="case current">
+    <div class="case-toggle" onclick="this.parentElement.classList.toggle('open')">
+      <div>
+        <div class="case-meta">CASE #002 &nbsp;|&nbsp; AUG 2025 – PRESENT &nbsp;|&nbsp; PRIORITY: <span class="priority-crit">CRITICAL</span></div>
+        <div class="case-title">Security Engineering Research Intern</div>
+        <div class="case-org">University of New Haven</div>
+        <div class="case-summary">Building ICS/SCADA detection systems and automated CVE research pipelines.</div>
+      </div>
+      <span class="arrow">›</span>
+    </div>
+    <ul class="case-bullets collapsible">
+      <li><strong>Built an ICS/SCADA testbed</strong> and trained anomaly-based IDS models on 1,000+ labeled network logs using Python, Tshark, and custom data pipelines</li>
+      <li><strong>Automated a CVE data pipeline</strong> that mined 10,000+ code samples by tracking CVE-linked commits and extracting function-level snippets</li>
+      <li><strong>Evaluated LLM-based vulnerability detection models</strong> against traditional SAST tools — quantified detection accuracy gaps across industrial codebases</li>
+    </ul>
+  </div>
+  <div class="case">
+    <div class="case-toggle" onclick="this.parentElement.classList.toggle('open')">
+      <div>
+        <div class="case-meta">CASE #001 &nbsp;|&nbsp; 2020 – 2023 &nbsp;|&nbsp; PRIORITY: <span class="priority-high">HIGH</span></div>
+        <div class="case-title">System Engineer — Security & Infrastructure</div>
+        <div class="case-org">Tata Communications · India</div>
+        <div class="case-summary">Secured and automated a 250+ VM distributed SIEM platform for national telecom infrastructure.</div>
+      </div>
+      <span class="arrow">›</span>
+    </div>
+          <ul class="case-bullets collapsible">
             <li>Developed Python automation for health monitoring across a 250+ VM distributed SIEM platform — service status, server metrics, resource utilization</li>
             <li>Built CI/CD pipelines: Jenkins + GitLab → SAST/DAST scans → SonarQube quality gates → Nexus artifact management</li>
             <li><strong>Configured Nginx as reverse proxy and load balancer</strong> for production services, implementing SSL/TLS termination end-to-end and generated public/private key pairs using OpenSSL keygen, created .crt certificate files, and configured HTTPS enforcement for secure client-server communication</li>
