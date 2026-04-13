@@ -192,19 +192,46 @@ a:hover { opacity: 0.8; }
   text-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
 }
 
+/* NEW: DATA FRAGMENT LINES (Glitch shards) */
+.hero-name::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -10%; /* Starts slightly outside for better flow */
+  width: 120%;
+  height: 100%;
+  /* Creates multiple horizontal 'data packets' using linear-gradients */
+  background: 
+    linear-gradient(90deg, transparent 20%, var(--cyan) 20%, var(--cyan) 25%, transparent 25%, transparent 40%, var(--cyan) 40%, var(--cyan) 41%, transparent 41%),
+    linear-gradient(90deg, transparent 10%, #fff 10%, #fff 12%, transparent 12%, transparent 70%, #fff 70%, #fff 72%, transparent 72%);
+  background-size: 200% 1.5px, 150% 1px; /* Very thin lines */
+  background-repeat: repeat-x;
+  background-position: 0 35%, 0 65%; /* One line high, one line low */
+  opacity: 0.3;
+  filter: blur(0.5px);
+  z-index: 1; /* Sits behind the dot mask but over the background */
+  pointer-events: none;
+  animation: dataStream 4s linear infinite;
+}
+
 /* THE DOT MATRIX MASK */
 .hero-name::after {
   content: "";
   position: absolute;
   inset: 0;
-  /* This creates the tiny dots by masking the text */
   background-image: radial-gradient(
     rgba(7, 11, 20, 1) 40%, 
     transparent 40%
   );
-  background-size: 4px 4px; /* Adjust this to make dots smaller/larger */
-  z-index: 2;
+  background-size: 4px 4px;
+  z-index: 2; /* Sits on top of everything to 'punch' the dot holes */
   pointer-events: none;
+}
+
+/* ANIMATION FOR THE SHARDS */
+@keyframes dataStream {
+  0% { background-position: 100% 35%, 100% 65%; }
+  100% { background-position: -100% 35%, -150% 65%; }
 }
 .hero-title {
   font-family: var(--mono); font-size: 15px; letter-spacing: 2px;
