@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YASH KITEY — Security Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CSS VARIABLES — SOC DASHBOARD PALETTE
+   ============================================================ */
+:root {
+  --bg: #070b14;
+  --bg-panel: #0c1120;
+  --bg-card: #111827;
+  --bg-card-hover: #151d30;
+  --border: #1e293b;
+  --border-light: #2a3a52;
+  --cyan: #22d3ee;
+  --cyan-dim: rgba(34,211,238,0.12);
+  --cyan-glow: rgba(34,211,238,0.06);
+  --blue: #3b82f6;
+  --blue-dim: rgba(59,130,246,0.10);
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,0.10);
+  --green-glow: rgba(16,185,129,0.04);
+  --amber: #f59e0b;
+  --amber-dim: rgba(245,158,11,0.10);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.08);
+  --text: #e2e8f0;
+  --text-2: #94a3b8;
+  --text-muted: #64748b;
+  --text-dim: #475569;
+  --mono: 'JetBrains Mono', monospace;
+  --body: 'Outfit', sans-serif;
+  --display: 'Syne', sans-serif;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { color: var(--cyan); text-decoration: none; transition: opacity 0.2s; }
+a:hover { opacity: 0.8; }
+::selection { background: var(--cyan-dim); color: var(--cyan); }
+
+/* ============================================================
+   BOOT SCREEN
+   ============================================================ */
+.boot-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px;
+  animation: bootFade 0.6s ease 1.8s forwards;
+  pointer-events: none;
+}
+.boot-text {
+  font-family: var(--mono); font-size: 14px; color: var(--cyan);
+  letter-spacing: 2px;
+  animation: bootBlink 0.4s steps(1) infinite;
+}
+.boot-bar {
+  width: 200px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden;
+}
+.boot-fill {
+  height: 100%; width: 0; background: var(--cyan); border-radius: 2px;
+  animation: bootLoad 1.6s ease forwards;
+}
+@keyframes bootLoad { to { width: 100%; } }
+@keyframes bootBlink { 50% { opacity: 0.3; } }
+@keyframes bootFade { to { opacity: 0; visibility: hidden; } }
+
+/* ============================================================
+   BACKGROUND — SUBTLE GRID
+   ============================================================ */
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(34,211,238,0.04) 1px, transparent 0);
+  background-size: 48px 48px;
+}
+.bg-glow {
+  position: fixed; z-index: 0; pointer-events: none;
+  width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(34,211,238,0.03) 0%, transparent 70%);
+  top: -200px; left: 50%; transform: translateX(-50%);
+  animation: glowDrift 20s ease-in-out infinite alternate;
+}
+@keyframes glowDrift {
+  0% { transform: translateX(-50%) translateY(0); }
+  100% { transform: translateX(-30%) translateY(100px); }
+}
+
+/* ============================================================
+   STATUS BAR (top fixed)
+   ============================================================ */
+.status-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 36px;
+  background: rgba(7,11,20,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+  color: var(--text-muted);
+  padding: 0 20px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.status-bar .sep { color: var(--border-light); }
+.status-bar .val { color: var(--text-2); }
+.status-bar .active { color: var(--green); }
+.status-bar .cursor {
+  display: inline-block; width: 7px; height: 14px;
+  background: var(--cyan); margin-left: 4px;
+  animation: cursorBlink 1s steps(1) infinite;
+}
+@keyframes cursorBlink { 50% { opacity: 0; } }
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+.main { position: relative; z-index: 1; padding-top: 36px; }
+.container { max-width: 1060px; margin: 0 auto; padding: 0 28px; }
+
+/* ============================================================
+   SECTION LABEL
+   ============================================================ */
+.sec-label {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.sec-label span { color: var(--cyan); }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero {
+  min-height: calc(100vh - 36px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 80px 20px;
+  position: relative;
+}
+.hero-name {
+  font-family: var(--display); font-size: clamp(48px,8vw,80px);
+  font-weight: 800; letter-spacing: -2px; line-height: 1;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--text) 0%, var(--cyan) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-title {
+  font-family: var(--mono); font-size: 15px; letter-spacing: 2px;
+  color: var(--cyan); margin-bottom: 20px;
+}
+.hero-desc {
+  font-size: 17px; color: var(--text-2); max-width: 560px;
+  line-height: 1.8; font-weight: 300;
+}
+.hero-ctas {
+  display: flex; gap: 16px; margin-top: 36px; flex-wrap: wrap; justify-content: center;
+}
+.btn {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 1.5px;
+  padding: 12px 28px; border-radius: 6px; cursor: pointer;
+  transition: all 0.3s; border: 1px solid; display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-cyan {
+  color: var(--cyan); border-color: rgba(34,211,238,0.3); background: var(--cyan-dim);
+}
+.btn-cyan:hover { background: rgba(34,211,238,0.18); border-color: var(--cyan); box-shadow: 0 0 20px rgba(34,211,238,0.1); }
+.btn-green {
+  color: var(--green); border-color: rgba(16,185,129,0.3); background: var(--green-dim);
+}
+.btn-green:hover { background: rgba(16,185,129,0.18); border-color: var(--green); }
+
+/* Scroll indicator */
+.scroll-hint {
+  position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+  font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+  letter-spacing: 2px; text-transform: uppercase;
+  animation: scrollPulse 2s ease infinite;
+}
+@keyframes scrollPulse { 0%,100%{opacity:0.3;transform:translateX(-50%) translateY(0)} 50%{opacity:0.7;transform:translateX(-50%) translateY(6px)} }
+
+/* ============================================================
+   SECTION
+   ============================================================ */
+.section {
+  padding: 80px 0;
+  opacity: 0; transform: translateY(30px);
+  animation: none;
+}
+.section.visible {
+  animation: fadeInUp 0.7s ease forwards;
+}
+@keyframes fadeInUp { to { opacity:1; transform:translateY(0); } }
+
+.section-divider {
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+/* ============================================================
+   SKILLS — ACTIVE DEFENSE MATRIX
+   ============================================================ */
+.layer {
+  margin-bottom: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.layer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; cursor: pointer;
+  transition: background 0.2s;
+}
+.layer-header:hover { background: var(--bg-card-hover); }
+.layer-name {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 1.5px;
+  color: var(--text-2); text-transform: uppercase;
+}
+.layer-count {
+  font-family: var(--mono); font-size: 11px; color: var(--text-dim);
+}
+.layer-skills {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 0 20px 16px;
+}
+.skill-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 6px;
+  font-size: 13px; font-weight: 500;
+  background: var(--bg-panel); border: 1px solid var(--border);
+  transition: border-color 0.2s, box-shadow 0.3s;
+}
+.skill-chip:hover { border-color: var(--border-light); }
+.skill-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+}
+.skill-dot.active { background: var(--green); box-shadow: 0 0 6px var(--green); animation: dotPulse 2s ease infinite; }
+.skill-dot.deploying { background: var(--amber); box-shadow: 0 0 6px var(--amber); animation: dotPulse 2.5s ease infinite; }
+.skill-dot.reactivating { background: var(--amber); animation: dotBlink 1.5s steps(1) infinite; }
+@keyframes dotPulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+@keyframes dotBlink { 50%{opacity:0.2} }
+
+/* ============================================================
+   EXPERIENCE — INCIDENT TIMELINE
+   ============================================================ */
+.timeline { position: relative; padding-left: 36px; }
+.timeline::before {
+  content:''; position: absolute; left: 11px; top: 8px; bottom: 8px;
+  width: 2px; background: linear-gradient(180deg, var(--cyan), var(--border));
+}
+.case {
+  position: relative; margin-bottom: 36px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 24px;
+  transition: border-color 0.3s;
+}
+.case:hover { border-color: var(--border-light); }
+.case::before {
+  content:''; position: absolute; left: -33px; top: 28px;
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--cyan); background: var(--bg);
+}
+.case.current::before { background: var(--cyan); box-shadow: 0 0 10px rgba(34,211,238,0.3); }
+.case-meta {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+  color: var(--text-dim); margin-bottom: 8px;
+}
+.case-meta .priority-high { color: var(--amber); }
+.case-meta .priority-crit { color: var(--red); }
+.case-title {
+  font-size: 18px; font-weight: 600; color: var(--cyan); margin-bottom: 4px;
+}
+.case-org { font-size: 14px; color: var(--text-2); margin-bottom: 14px; }
+.case-bullets { list-style: none; padding: 0; }
+.case-bullets li {
+  font-size: 14px; color: var(--text-2); padding: 4px 0;
+  padding-left: 18px; position: relative; line-height: 1.7;
+}
+.case-bullets li::before {
+  content: '→'; position: absolute; left: 0; color: var(--text-dim);
+  font-family: var(--mono); font-size: 12px;
+}
+
+/* ============================================================
+   PROJECTS — MONITORED ASSETS
+   ============================================================ */
+.assets-summary {
+  font-family: var(--mono); font-size: 13px; color: var(--text-2);
+  margin-bottom: 24px; padding: 12px 16px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; display: inline-block;
+}
+.assets-summary .healthy { color: var(--green); }
+.assets-summary .deploying-t { color: var(--amber); }
+
+.asset-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 28px;
+  margin-bottom: 16px; position: relative;
+  overflow: hidden; transition: border-color 0.3s;
+}
+.asset-card:hover { border-color: var(--border-light); }
+.asset-card::after {
+  content:''; position: absolute; top: 0; left: -100%; right: 0;
+  height: 1px; background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  transition: left 0.6s ease;
+}
+.asset-card:hover::after { left: 100%; }
+.asset-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
+}
+.asset-id {
+  font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 1px;
+}
+.asset-status {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+  padding: 3px 12px; border-radius: 20px;
+}
+.asset-status.healthy { color: var(--green); background: var(--green-dim); border: 1px solid rgba(16,185,129,0.2); }
+.asset-status.deploying-s { color: var(--amber); background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.2); }
+.asset-name { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+.asset-desc { font-size: 14px; color: var(--text-2); margin-bottom: 14px; line-height: 1.7; }
+.asset-tech {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;
+}
+.tech-pill {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.5px;
+  padding: 4px 10px; border-radius: 4px;
+  background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-muted);
+}
+.asset-link {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 1px;
+  color: var(--cyan); display: inline-flex; align-items: center; gap: 6px;
+  transition: gap 0.2s;
+}
+.asset-link:hover { gap: 10px; opacity: 1; }
+
+/* ============================================================
+   CERTIFICATIONS — SECURITY CLEARANCES
+   ============================================================ */
+.clearance-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.clearance {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 18px 20px;
+  display: flex; align-items: center; gap: 14px;
+  transition: border-color 0.2s;
+}
+.clearance:hover { border-color: var(--border-light); }
+.clearance-badge {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+  padding: 3px 8px; border-radius: 4px; flex-shrink: 0; white-space: nowrap;
+}
+.clearance-badge.verified { color: var(--green); background: var(--green-dim); border: 1px solid rgba(16,185,129,0.2); }
+.clearance-badge.progress { color: var(--amber); background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.2); }
+.clearance-info { flex: 1; }
+.clearance-name { font-size: 14px; font-weight: 500; }
+.clearance-org { font-size: 12px; color: var(--text-muted); }
+
+/* ============================================================
+   BLOG — THREAT INTEL FEED
+   ============================================================ */
+.feed-item {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px 24px;
+  margin-bottom: 12px; display: flex; gap: 16px; align-items: flex-start;
+  transition: border-color 0.2s;
+}
+.feed-item:hover { border-color: var(--border-light); }
+.feed-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--cyan); flex-shrink: 0; margin-top: 8px;
+  box-shadow: 0 0 6px var(--cyan-dim);
+}
+.feed-meta {
+  font-family: var(--mono); font-size: 11px; color: var(--text-dim);
+  letter-spacing: 0.5px; margin-bottom: 4px;
+}
+.feed-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+.feed-excerpt { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+/* ============================================================
+   CONTACT — SECURE CONNECTION
+   ============================================================ */
+.contact-box {
+  text-align: center; padding: 48px 24px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.conn-text {
+  font-family: var(--mono); font-size: 13px; letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.conn-text.loading { color: var(--text-dim); }
+.conn-text.done { color: var(--green); }
+.contact-links {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  margin-top: 28px;
+}
+.contact-pill {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 1px;
+  padding: 10px 24px; border-radius: 8px;
+  background: var(--bg-panel); border: 1px solid var(--border);
+  color: var(--text-2); transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.contact-pill:hover { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer {
+  text-align: center; padding: 32px 20px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border);
+}
+
+/* ============================================================
+   SECTION HEADING
+   ============================================================ */
+.section h2 {
+  font-family: var(--display); font-size: 28px; font-weight: 700;
+  margin-bottom: 28px; letter-spacing: -0.5px;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+  .status-bar { font-size: 9px; gap: 4px; justify-content: flex-start; overflow-x: auto; }
+  .hero { padding: 60px 16px; min-height: 80vh; }
+  .hero-name { font-size: 40px; }
+  .section { padding: 48px 0; }
+  .clearance-grid { grid-template-columns: 1fr; }
+  .asset-header { flex-direction: column; align-items: flex-start; }
+  .timeline { padding-left: 28px; }
+  .feed-item { flex-direction: column; gap: 8px; }
+  .contact-links { flex-direction: column; align-items: center; }
+}
+
+@media (max-width: 480px) {
+  .hero-name { font-size: 32px; letter-spacing: -1px; }
+  .hero-title { font-size: 12px; }
+  .btn { font-size: 11px; padding: 10px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- BOOT SCREEN -->
+<div class="boot-screen">
+  <div class="boot-text">INITIALIZING SYSTEM...</div>
+  <div class="boot-bar"><div class="boot-fill"></div></div>
+</div>
+
+<!-- BACKGROUND -->
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <span>SYSTEM: <span class="val">YASH_KITEY</span></span>
+  <span class="sep">│</span>
+  <span>STATUS: <span class="active">● ACTIVE</span></span>
+  <span class="sep">│</span>
+  <span>LOCATION: <span class="val">CT, USA</span></span>
+  <span class="sep">│</span>
+  <span>UPTIME: <span class="val">3+ YRS</span></span>
+  <span class="cursor"></span>
+  <span>CLEARANCE: <span class="val">CCNA (Training) · CYBEROPS (Training) · PALO ALTO (Training)</span></span>
+  <span class="sep">│</span>
+
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- =============== HERO =============== -->
+  <section class="hero">
+    <div class="sec-label"><span>//</span> THREAT_LANDSCAPE_OVERVIEW</div>
+    <h1 class="hero-name">YASH KITEY</h1>
+    <div class="hero-title">SECURITY ENGINEER · CLOUD SECURITY · DEVSECOPS</div>
+    <p class="hero-desc">3+ years defending telecom infrastructure at scale. Building security systems that protect millions. MS Cybersecurity & Networks @ University of New Haven.</p>
+    <div class="hero-ctas">
+      <a href="#projects" class="btn btn-cyan">▶ &nbsp;VIEW SECURITY REPORT</a>
+      <a href="#contact" class="btn btn-green">◉ &nbsp;ESTABLISH CONNECTION</a>
+    </div>
+    <div class="scroll-hint">↓ SCROLL TO INVESTIGATE ↓</div>
+  </section>
+
+  <div class="container">
+    <div class="section-divider"></div>
+
+    <!-- =============== SKILLS =============== -->
+    <section class="section" id="skills">
+      <div class="sec-label"><span>//</span> ACTIVE_DEFENSE_MATRIX</div>
+      <h2>Active Defenses</h2>
+
+      <div class="layer">
+        <div class="layer-header">
+          <span class="layer-name">Layer 1 — Infrastructure Security</span>
+          <span class="layer-count">6 active</span>
+        </div>
+        <div class="layer-skills">
+          <span class="skill-chip"><span class="skill-dot active"></span>Linux</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>Nginx</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>SSL / TLS</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>Network Security</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>Load Balancing</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>OpenSSL</span>
+        </div>
+      </div>
+
+      <div class="layer">
+        <div class="layer-header">
+          <span class="layer-name">Layer 2 — Automation & DevSecOps</span>
+          <span class="layer-count">6 active · 2 reactivating</span>
+        </div>
+        <div class="layer-skills">
+          <span class="skill-chip"><span class="skill-dot active"></span>Python</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>CI/CD Pipelines</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>Ansible</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>Jenkins</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>SonarQube</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>Git</span>
+          <span class="skill-chip"><span class="skill-dot reactivating"></span>Terraform</span>
+          <span class="skill-chip"><span class="skill-dot reactivating"></span>Docker</span>
+        </div>
+      </div>
+
+      <div class="layer">
+        <div class="layer-header">
+          <span class="layer-name">Layer 3 — Cloud Security</span>
+          <span class="layer-count">5 deploying</span>
+        </div>
+        <div class="layer-skills">
+          <span class="skill-chip"><span class="skill-dot deploying"></span>GCP</span>
+          <span class="skill-chip"><span class="skill-dot deploying"></span>AWS</span>
+          <!--span class="skill-chip"><span class="skill-dot active"></span>CCSK</span -->
+          <span class="skill-chip"><span class="skill-dot deploying"></span>IAM</span>
+          <span class="skill-chip"><span class="skill-dot deploying"></span>VPC Security</span>
+          <span class="skill-chip"><span class="skill-dot deploying"></span>Container Security</span>
+        </div>
+      </div>
+
+      <div class="layer">
+        <div class="layer-header">
+          <span class="layer-name">Layer 4 — Detection & Response</span>
+          <span class="layer-count">4 active · 2 deploying</span>
+        </div>
+        <div class="layer-skills">
+          <span class="skill-chip"><span class="skill-dot active"></span>SIEM</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>Incident Response</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>Threat Detection</span>
+          <span class="skill-chip"><span class="skill-dot deploying"></span>MITRE ATT&CK</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>Vulnerability Assessment</span>
+          <span class="skill-chip"><span class="skill-dot deploying"></span>Threat Hunting</span>
+        </div>
+      </div>
+
+      <div class="layer">
+        <div class="layer-header">
+          <span class="layer-name">Layer 5 — Governance & Compliance</span>
+          <span class="layer-count">4 active</span>
+        </div>
+        <div class="layer-skills">
+          <span class="skill-chip"><span class="skill-dot active"></span>ITSAR / NCCS</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>Compliance Auditing</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>GRC</span>
+          <span class="skill-chip"><span class="skill-dot active"></span>OWASP Top 10</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- =============== EXPERIENCE =============== -->
+    <section class="section" id="experience">
+      <div class="sec-label"><span>//</span> INCIDENT_TIMELINE</div>
+      <h2>Mission Log</h2>
+
+      <div class="timeline">
+        <div class="case current">
+          <div class="case-meta">CASE #002 &nbsp;|&nbsp; 2024 – PRESENT &nbsp;|&nbsp; PRIORITY: <span class="priority-crit">CRITICAL</span></div>
+          <div class="case-title">Research Assistant + MS Cybersecurity</div>
+          <div class="case-org">University of New Haven · West Haven, CT</div>
+          <ul class="case-bullets">
+            <li>Pursuing MS in Cybersecurity & Networks with focus on cloud security and network defense (graduating May 2027)</li>
+            <li>Research Assistant — supporting cybersecurity research projects within the university's security lab including Industrial Control Systems Security and AI-driven vulnerability analysis</li>
+            <li>Deepening expertise in cloud security architecture and zero-trust design</li>
+            <li>Participated NCAE Cyber Games</li>
+            <li>Active CTF participant — TryHackMe, HackTheBox</li>
+          </ul>
+        </div>
+
+        <div class="case">
+          <div class="case-meta">CASE #001 &nbsp;|&nbsp; 2020 – 2023 &nbsp;|&nbsp; PRIORITY: <span class="priority-high">HIGH</span></div>
+          <div class="case-title">System Engineer — Security & DevOps</div>
+          <div class="case-org">Tata Communications · India</div>
+          <ul class="case-bullets">
+            <li>Developed Python automation for health monitoring across a 250+ VM distributed SIEM platform — service status, server metrics, resource utilization</li>
+            <li>Built CI/CD pipelines: Jenkins + GitLab → SAST/DAST scans → SonarQube quality gates → Nexus artifact management</li>
+            <li><strong>Configured Nginx as reverse proxy and load balancer</strong> for production services, implementing SSL/TLS termination end-to-end and generated public/private key pairs using OpenSSL keygen, created .crt certificate files, and configured HTTPS enforcement for secure client-server communication</li>
+            <li><strong>Automated infrastructure deployment at scale with Ansible</strong> — wrote playbooks for consistent software rollout, service configuration, and system hardening across all 250+ VMs, eliminating manual configuration drift and reducing deployment time from hours to minutes</li>
+            <li><strong>Maintained ITSAR compliance</strong> (Indian Telecom Security Assurance Requirements) under NCCS, Department of Communications — supported security audit readiness, maintained baseline configurations, and ensured the distributed SIEM platform met national telecom security standards</li>
+            <li>Monitored distributed microservice health with automated alerting for service degradation and resource exhaustion</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- =============== PROJECTS =============== -->
+    <section class="section" id="projects">
+      <div class="sec-label"><span>//</span> MONITORED_ASSETS</div>
+      <h2>Monitored Assets</h2>
+
+      <div class="assets-summary">
+        3 Assets Tracked &nbsp;·&nbsp; <span class="healthy">2 Healthy</span> &nbsp;·&nbsp; <span class="deploying-t">1 Deploying</span>
+      </div>
+
+      <div class="asset-card">
+        <div class="asset-header">
+          <span class="asset-id">ASSET-001</span>
+          <span class="asset-status healthy">● HEALTHY</span>
+        </div>
+        <div class="asset-name">Cloud Infrastructure Health & Security Monitor</div>
+        <div class="asset-desc">Cloud-native monitoring and security posture scanner for GCP infrastructure. Python agents collect system metrics across VMs, publish to Pub/Sub, process via Cloud Functions into BigQuery. Includes automated security scanning for firewall misconfigurations, public IP exposure, stale IAM keys, and CIS benchmark compliance.</div>
+        <div class="asset-tech">
+          <span class="tech-pill">Python</span>
+          <span class="tech-pill">GCP</span>
+          <span class="tech-pill">Terraform</span>
+          <span class="tech-pill">Pub/Sub</span>
+          <span class="tech-pill">BigQuery</span>
+          <span class="tech-pill">Cloud Functions</span>
+          <span class="tech-pill">Grafana</span>
+        </div>
+        <a href="#" class="asset-link">VIEW REPORT →</a>
+      </div>
+
+      <div class="asset-card">
+        <div class="asset-header">
+          <span class="asset-id">ASSET-002</span>
+          <span class="asset-status healthy">● HEALTHY</span>
+        </div>
+        <div class="asset-name">Secure DevSecOps CI/CD Pipeline</div>
+        <div class="asset-desc">Full shift-left DevSecOps pipeline extending production CI/CD experience. Integrates 6 security gates: SAST (Semgrep), SCA + container scanning (Trivy), code quality (SonarQube), DAST (OWASP ZAP), IaC scanning (Checkov), with automated HTML security report generation per build.</div>
+        <div class="asset-tech">
+          <span class="tech-pill">Jenkins</span>
+          <span class="tech-pill">GitHub Actions</span>
+          <span class="tech-pill">Docker</span>
+          <span class="tech-pill">Semgrep</span>
+          <span class="tech-pill">Trivy</span>
+          <span class="tech-pill">SonarQube</span>
+          <span class="tech-pill">OWASP ZAP</span>
+          <span class="tech-pill">Checkov</span>
+        </div>
+        <a href="#" class="asset-link">VIEW REPORT →</a>
+      </div>
+
+      <div class="asset-card">
+        <div class="asset-header">
+          <span class="asset-id">ASSET-003</span>
+          <span class="asset-status deploying-s">◉ DEPLOYING</span>
+        </div>
+        <div class="asset-name">GCP Zero-Trust Architecture with Automated Compliance</div>
+        <div class="asset-desc">Production-grade zero-trust cloud architecture on GCP. Custom VPC with private subnets, Cloud NAT, private GKE cluster with workload identity, VPC Service Controls, Security Command Center monitoring. Python compliance bot audits IAM, firewall rules, encryption status, and key rotation daily.</div>
+        <div class="asset-tech">
+          <span class="tech-pill">GCP</span>
+          <span class="tech-pill">Terraform</span>
+          <span class="tech-pill">VPC Service Controls</span>
+          <span class="tech-pill">GKE</span>
+          <span class="tech-pill">Security Command Center</span>
+          <span class="tech-pill">Python</span>
+          <span class="tech-pill">Checkov</span>
+        </div>
+        <a href="#" class="asset-link">VIEW REPORT →</a>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- =============== CERTIFICATIONS =============== -->
+    <section class="section" id="certs">
+      <div class="sec-label"><span>//</span> SECURITY_CLEARANCES</div>
+      <h2>Verified Clearances</h2>
+
+      <div class="clearance-grid">
+        <div class="clearance">
+          <span class="clearance-badge verified">✓ VERIFIED</span>
+          <div class="clearance-info">
+            <div class="clearance-name">CCSK</div>
+            <div class="clearance-org">Cloud Security Alliance</div>
+          </div>
+        </div>
+        <div class="clearance">
+          <span class="clearance-badge verified">✓ VERIFIED</span>
+          <div class="clearance-info">
+            <div class="clearance-name">CCNA</div>
+            <div class="clearance-org">Cisco</div>
+          </div>
+        </div>
+        <div class="clearance">
+          <span class="clearance-badge verified">✓ VERIFIED</span>
+          <div class="clearance-info">
+            <div class="clearance-name">CyberOps Associate</div>
+            <div class="clearance-org">Cisco</div>
+          </div>
+        </div>
+        <div class="clearance">
+          <span class="clearance-badge verified">✓ VERIFIED</span>
+          <div class="clearance-info">
+            <div class="clearance-name">Cloud Security</div>
+            <div class="clearance-org">Palo Alto Networks</div>
+          </div>
+        </div>
+        <div class="clearance">
+          <span class="clearance-badge progress">◎ IN PROGRESS</span>
+          <div class="clearance-info">
+            <div class="clearance-name">Professional Cloud Security Engineer</div>
+            <div class="clearance-org">Google Cloud</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- =============== BLOG =============== -->
+    <section class="section" id="blog">
+      <div class="sec-label"><span>//</span> THREAT_INTEL_FEED</div>
+      <h2>Intel Feed</h2>
+
+      <a href="https://medium.com/@kiteyyash3" target="_blank" class="feed-item">
+        <div class="feed-dot"></div>
+        <div>
+          <div class="feed-meta">MEDIUM · CYBERSECURITY UNLOCKED</div>
+          <div class="feed-title">Cybersecurity Unlocked: A Journey into Cybersec</div>
+          <div class="feed-excerpt">Technical blog series covering cybersecurity fundamentals, network defense, and cloud security — making complex topics accessible.</div>
+        </div>
+      </a>
+
+      <a href="#" class="feed-item">
+        <div class="feed-dot"></div>
+        <div>
+          <div class="feed-meta">LINKEDIN · CVE ANALYSIS</div>
+          <div class="feed-title">CVE-2025-49144 — Notepad++ Privilege Escalation Analysis</div>
+          <div class="feed-excerpt">Independent vulnerability analysis: root cause investigation, exploitation path documentation, and remediation recommendations.</div>
+        </div>
+      </a>
+
+      <a href="#" class="feed-item">
+        <div class="feed-dot"></div>
+        <div>
+          <div class="feed-meta">TRYHACKME · CTF WRITEUP</div>
+          <div class="feed-title">Industrial Intrusion CTF — OT/ICS Security Challenge</div>
+          <div class="feed-excerpt">Completed medium-difficulty CTF simulating industrial system breaches. Exploited insecure SCADA protocols and performed privilege escalation in OT environments.</div>
+        </div>
+      </a>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- =============== CONTACT =============== -->
+    <section class="section" id="contact">
+      <div class="sec-label"><span>//</span> ESTABLISH_SECURE_CONNECTION</div>
+      <h2>Connect</h2>
+
+      <div class="contact-box">
+        <div class="conn-text loading">ESTABLISHING SECURE CONNECTION...</div>
+        <div class="conn-text done">CONNECTION ESTABLISHED ✓</div>
+
+        <div class="contact-links">
+          <a href="https://linkedin.com/in/yash-kitey" target="_blank" class="contact-pill">◆ &nbsp;LINKEDIN</a>
+          <a href="https://github.com/yashkitey" target="_blank" class="contact-pill">◆ &nbsp;GITHUB</a>
+          <a href="https://medium.com/@kiteyyash3" target="_blank" class="contact-pill">◆ &nbsp;MEDIUM</a>
+          <a href="mailto:your@email.com" class="contact-pill">◆ &nbsp;EMAIL</a>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /container -->
+
+  <!-- FOOTER -->
+  <div class="footer">
+    PORTFOLIO v2.0 &nbsp;·&nbsp; LAST UPDATED: 2025-06 &nbsp;·&nbsp; ALL SYSTEMS OPERATIONAL
+  </div>
+
+</div><!-- /main -->
+
+<!-- ============================================================
+     SCROLL REVEAL SCRIPT
+     ============================================================ -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Intersection Observer for fade-in sections
+  const sections = document.querySelectorAll('.section');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Connection animation in contact section
+  const contactSection = document.getElementById('contact');
+  const connObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const loading = entry.target.querySelector('.conn-text.loading');
+        const done = entry.target.querySelector('.conn-text.done');
+        if (loading && done) {
+          loading.style.display = 'block';
+          done.style.display = 'none';
+          setTimeout(() => {
+            loading.style.display = 'none';
+            done.style.display = 'block';
+          }, 1500);
+        }
+        connObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  if (contactSection) connObserver.observe(contactSection);
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+});
+</script>
+
+</body>
+</html>
