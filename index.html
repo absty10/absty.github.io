@@ -757,10 +757,10 @@ a:hover { opacity: 0.8; }
     </div>
     <ul class="case-bullets collapsible">
       <li><strong>Cut VM provisioning time ~70%</strong> (5–8 min → ~2 min) for the whole Infra team with an end-to-end Ansible + Python framework automating the full VM lifecycle on a private OpenNebula cloud</li>
-      <li><strong>Eliminated 100% of manual console steps</strong> with a zero-touch Jira intake pipeline that validates engineer-submitted Excel specs, auto-resolves placement (cluster, datastore, CPU architecture), and drives the OpenNebula API</li>
-      <li><strong>Defense-in-depth by design</strong>: multi-layer input sanitization, a path-traversal vulnerability caught and fixed pre-production, environment-variable secrets (zero plaintext credentials), and a tamper-evident audit trail for every automated change</li>
-      <li>Wrote ~25 standalone Python modules against OpenNebula's XML-RPC API to unblock lifecycle operations Ansible's built-in modules couldn't perform</li>
-      <li><strong>Replaced unaudited CLI workflows</strong> with a FastAPI-backed internal dashboard restricted to the R&amp;D team through LDAP groups; developed CIS Level 1 VM-hardening Ansible playbooks</li>
+      <li><strong>Built a FastAPI self-service dashboard</strong> that turns Jira tickets into validated VM deployment requests, auto-resolves cluster/datastore/VLAN placement, and launches Ansible runs with live job tracking, replacing the manual console workflow</li>
+      <li><strong>Threat-modeled the system (STRIDE)</strong>: documented 11 findings, including an auth bypass left enabled, disabled group authorization, SSRF via image URLs and an over-privileged service account, each rated with a mitigation</li>
+      <li><strong>Defense-in-depth by design</strong>: input sanitization (caught a normalize-before-check path-traversal bypass), argv-safe subprocess calls, secrets kept out of code and logs, HTTPS via an internal CA, and attributed audit logging, backed by an 80-test security suite</li>
+      <li>Wrote ~25 standalone Python modules against OpenNebula's XML-RPC API, root-caused production provisioning failures, and authored the team handover documentation</li>
     </ul>
   </div>
 
