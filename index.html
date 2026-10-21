@@ -367,6 +367,7 @@ a:hover { opacity: 0.8; }
 }
 .case-meta .priority-high { color: var(--amber); }
 .case-meta .priority-crit { color: var(--red); }
+.case-meta .priority-closed { color: var(--text-muted); }
 .case-title {
   font-size: 18px; font-weight: 600; color: var(--cyan); margin-bottom: 4px;
 }
@@ -650,7 +651,7 @@ a:hover { opacity: 0.8; }
     <span class="first">YASH</span> <span class="last">KITEY</span>
   </h1>
     <div class="hero-title">SECURITY ENGINEER · CLOUD SECURITY · DEVSECOPS</div>
-    <p class="hero-desc">3+ years defending telecom infrastructure at scale. Building security systems that protect millions. MS Cybersecurity & Networks @ University of New Haven.</p>
+    <p class="hero-desc">3+ years securing telecom infrastructure at TCS, plus secure infrastructure automation at IPC Systems. I turn security problems into automation. MS Cybersecurity & Networks @ University of New Haven (4.0 GPA), open to full-time roles from May 2027.</p>
     <div class="hero-ctas">
       <a href="#projects" class="btn btn-cyan">▶ &nbsp;VIEW SECURITY REPORT</a>
       <a href="Yash_Kitey_Resume.pdf" class="btn btn-amber">🔓 &nbsp;_RESUME_</a>
@@ -751,18 +752,38 @@ a:hover { opacity: 0.8; }
       <h2>Mission Log</h2>
 
       <div class="timeline">
-  <div class="case current open">
+  <div class="case open">
     <div class="case-toggle" onclick="this.parentElement.classList.toggle('open')">
       <div>
-        <div class="case-meta">CASE #003 &nbsp;|&nbsp; JAN 2026 – PRESENT &nbsp;|&nbsp; PRIORITY: <span class="priority-active">ACTIVE</span></div>
-        <div class="case-title">Instructional Assistant — Cybersecurity</div>
-        <div class="case-org">University of New Haven</div>
-        <div class="case-summary">Designing workforce-ready cybersecurity training programs from scratch.</div>
+        <div class="case-meta">CASE #004 &nbsp;|&nbsp; JUN 2026 – SEP 2026 &nbsp;|&nbsp; PRIORITY: <span class="priority-high">HIGH</span> &nbsp;|&nbsp; <span class="priority-closed">RESOLVED</span></div>
+        <div class="case-title">Infrastructure Security Automation Engineer Intern</div>
+        <div class="case-org">IPC Systems · New York</div>
+        <div class="case-summary">Built a hardened Ansible + Python framework that cut VM provisioning time ~70% on a private OpenNebula cloud.</div>
       </div>
       <span class="arrow">›</span>
     </div>
     <ul class="case-bullets collapsible">
-      <li>Designing and delivering a workforce-ready cybersecurity training program that takes participants from zero experience to a publishable GitHub portfolio in 6 weeks</li>
+      <li><strong>Cut VM provisioning time ~70%</strong> (5–8 min → ~2 min) for the whole Infra team with an end-to-end Ansible + Python framework automating the full VM lifecycle on a private OpenNebula cloud</li>
+      <li><strong>Eliminated 100% of manual console steps</strong> with a zero-touch Jira intake pipeline that validates engineer-submitted Excel specs, auto-resolves placement (cluster, datastore, CPU architecture), and drives the OpenNebula API</li>
+      <li><strong>Defense-in-depth by design</strong>: multi-layer input sanitization, a path-traversal vulnerability caught and fixed pre-production, environment-variable secrets (zero plaintext credentials), and a tamper-evident audit trail for every automated change</li>
+      <li>Wrote ~25 standalone Python modules against OpenNebula's XML-RPC API to unblock lifecycle operations Ansible's built-in modules couldn't perform</li>
+      <li><strong>Replaced unaudited CLI workflows</strong> with a FastAPI-backed internal dashboard restricted to the R&amp;D team through LDAP groups; developed CIS Level 1 VM-hardening Ansible playbooks</li>
+    </ul>
+  </div>
+
+  <div class="case">
+    <div class="case-toggle" onclick="this.parentElement.classList.toggle('open')">
+      <div>
+        <div class="case-meta">CASE #003 &nbsp;|&nbsp; FEB 2026 – JUN 2026 &nbsp;|&nbsp; <span class="priority-closed">RESOLVED</span></div>
+        <div class="case-title">Instructional Assistant — Cybersecurity</div>
+        <div class="case-org">University of New Haven</div>
+        <div class="case-summary">Designed a workforce-ready cybersecurity training program from scratch.</div>
+      </div>
+      <span class="arrow">›</span>
+    </div>
+    <ul class="case-bullets collapsible">
+      <li><strong>Designed a 36-hour, NIST NICE-aligned training program</strong> from scratch, taking participants from zero experience to a publishable GitHub portfolio (Python, cryptography, Wireshark, ML threat detection)</li>
+      <li>Created dual-track lab manuals with 100% participant engagement; mentored students through employer-ready GitHub portfolio builds</li>
     </ul>
   </div>
 
@@ -785,7 +806,7 @@ a:hover { opacity: 0.8; }
   <div class="case">
     <div class="case-toggle" onclick="this.parentElement.classList.toggle('open')">
       <div>
-        <div class="case-meta">CASE #001 &nbsp;|&nbsp; 2020 – 2023 &nbsp;|&nbsp; PRIORITY: <span class="priority-crit">CRITICAL</span></div>
+        <div class="case-meta">CASE #001 &nbsp;|&nbsp; JUL 2022 – JUL 2025 &nbsp;|&nbsp; PRIORITY: <span class="priority-crit">CRITICAL</span></div>
         <div class="case-title">System Engineer — Security & DevOps</div>
         <div class="case-org">Tata Consultancy Services (TCS) · India</div>
         <div class="case-summary">Secured and automated a 250+ VM distributed SIEM platform for national telecom infrastructure.</div>
@@ -959,6 +980,24 @@ a:hover { opacity: 0.8; }
           <div class="feed-excerpt">Independent vulnerability analysis: root cause investigation, exploitation path documentation, and remediation recommendations.</div>
         </div>
       </a>
+
+      <div class="feed-item">
+        <div class="feed-dot"></div>
+        <div>
+          <div class="feed-meta">TALK · UNH CYBER THREAT INTELLIGENCE SEMINAR</div>
+          <div class="feed-title">Live demo: Cyber Threat Automation Pipeline using AI</div>
+          <div class="feed-excerpt">Co-built and presented live at the 2nd annual CTI Seminar at the University of New Haven, held with the Workforce Alliance.</div>
+        </div>
+      </div>
+
+      <div class="feed-item">
+        <div class="feed-dot"></div>
+        <div>
+          <div class="feed-meta">COMPETITIONS · BLUE TEAM</div>
+          <div class="feed-title">NCAE Cyber Games (Northeast-2 Regional) · Google Defense Readiness Workshop &amp; SecOps CTF</div>
+          <div class="feed-excerpt">Seven hours defending live infrastructure against an active red team, and hands-on detection work in Google SecOps.</div>
+        </div>
+      </div>
     </section>
  
     <div class="section-divider"></div>
@@ -1015,7 +1054,7 @@ a:hover { opacity: 0.8; }
 
   <!-- FOOTER -->
   <div class="footer">
-    PORTFOLIO v1.0 &nbsp;·&nbsp; LAST UPDATED: 2026-04 &nbsp;·&nbsp; ALL SYSTEMS OPERATIONAL
+    PORTFOLIO v1.1 &nbsp;·&nbsp; LAST UPDATED: 2026-10 &nbsp;·&nbsp; ALL SYSTEMS OPERATIONAL
   </div>
 
 </div><!-- /main -->
